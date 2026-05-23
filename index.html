@@ -1,114 +1,220 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Real City Simulator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Bangla Open World Simulator</title>
 
 <style>
-body{
+
+*{
     margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
     overflow:hidden;
-    font-family:Arial;
+    font-family:Arial, sans-serif;
     background:black;
 }
 
+canvas{
+    display:block;
+}
+
 #loading{
+
     position:absolute;
     inset:0;
+
     background:black;
-    color:white;
+
     display:flex;
     justify-content:center;
     align-items:center;
     flex-direction:column;
+
+    color:white;
+
     z-index:100;
 }
 
 #loading h1{
-    font-size:55px;
+
+    font-size:65px;
+
     color:#00ffcc;
-    margin-bottom:15px;
+
+    margin-bottom:20px;
+
+    text-shadow:0 0 25px #00ffcc;
 }
 
 #loading p{
+
     opacity:.7;
+
+    margin-bottom:20px;
+}
+
+#playBtn{
+
+    padding:16px 35px;
+
+    border:none;
+
+    border-radius:15px;
+
+    background:#00ffcc;
+
+    font-size:20px;
+
+    cursor:pointer;
+
+    font-weight:bold;
 }
 
 #hud{
+
     position:absolute;
+
     top:15px;
     left:15px;
+
     color:white;
-    z-index:10;
+
     background:rgba(0,0,0,.45);
-    padding:12px 18px;
+
+    padding:14px 20px;
+
     border-radius:14px;
-    backdrop-filter:blur(10px);
+
+    z-index:10;
+
+    backdrop-filter:blur(8px);
 }
 
 #crosshair{
+
     position:absolute;
+
     left:50%;
     top:50%;
+
     transform:translate(-50%,-50%);
+
     color:white;
-    font-size:28px;
-    z-index:10;
+
+    font-size:30px;
+
+    z-index:20;
 }
 
-button{
-    margin-top:20px;
-    padding:14px 30px;
-    border:none;
+#voice{
+
+    position:absolute;
+
+    bottom:20px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    background:rgba(0,0,0,.6);
+
+    color:white;
+
+    padding:12px 18px;
+
     border-radius:14px;
-    background:#00ffcc;
+
+    z-index:20;
+
     font-size:18px;
-    cursor:pointer;
-    font-weight:bold;
 }
+
 </style>
 </head>
 
 <body>
 
 <div id="loading">
-    <h1>REAL CITY SIMULATOR</h1>
-    <p>🌆 Realistic Open World Experience</p>
-    <button id="startBtn">START GAME</button>
+
+<h1>BANGLA CITY LIFE</h1>
+
+<p>🌆 Realistic Open World Experience</p>
+
+<button id="playBtn">
+ENTER CITY
+</button>
+
 </div>
 
 <div id="hud">
-    ❤️ Health: 100 <br>
-    💰 Money: 500 <br>
-    🚶 NPC: Alive
+
+<div>❤️ Health: <span id="health">100</span></div>
+
+<div>⭐ Wanted: <span id="wanted">0</span></div>
+
+<div>💰 Money: <span id="money">500</span></div>
+
+<div>🚗 Vehicle: Available</div>
+
 </div>
 
 <div id="crosshair">+</div>
+
+<div id="voice">
+🗣️ লোকজন: "এই ভাই কই যান?" 
+</div>
 
 <script type="module">
 
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
 
 import { PointerLockControls }
+
 from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/PointerLockControls.js';
+
+
+// SCENE
 
 const scene = new THREE.Scene();
 
-scene.fog = new THREE.Fog(0xa0a0a0,50,250);
+scene.background = new THREE.Color(0x87ceeb);
+
+scene.fog = new THREE.Fog(0x87ceeb,50,600);
+
+
+// CAMERA
 
 const camera = new THREE.PerspectiveCamera(
+
 75,
+
 window.innerWidth/window.innerHeight,
+
 0.1,
-1000
+
+2000
 );
 
+
+// RENDERER
+
 const renderer = new THREE.WebGLRenderer({
+
 antialias:true
+
 });
 
-renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setSize(
+
+window.innerWidth,
+
+window.innerHeight
+);
 
 renderer.shadowMap.enabled = true;
 
@@ -118,35 +224,40 @@ document.body.appendChild(renderer.domElement);
 // LIGHTING
 
 const hemiLight = new THREE.HemisphereLight(
+
 0xffffff,
+
 0x444444,
+
 2
 );
-
-hemiLight.position.set(0,200,0);
 
 scene.add(hemiLight);
 
-const dirLight = new THREE.DirectionalLight(
+const sun = new THREE.DirectionalLight(
+
 0xffffff,
+
 2
 );
 
-dirLight.position.set(-100,100,-100);
+sun.position.set(100,150,100);
 
-dirLight.castShadow = true;
+sun.castShadow = true;
 
-scene.add(dirLight);
+scene.add(sun);
 
 
 // GROUND
 
 const ground = new THREE.Mesh(
 
-new THREE.PlaneGeometry(1000,1000),
+new THREE.PlaneGeometry(3000,3000),
 
 new THREE.MeshStandardMaterial({
-color:0x555555
+
+color:0x3f704d
+
 })
 
 );
@@ -160,187 +271,242 @@ scene.add(ground);
 
 // ROADS
 
-for(let i=-500;i<500;i+=120){
+for(let i=-1400;i<1400;i+=150){
 
-    const road = new THREE.Mesh(
+const road = new THREE.Mesh(
 
-        new THREE.BoxGeometry(1000,1,30),
+new THREE.BoxGeometry(3000,1,40),
 
-        new THREE.MeshStandardMaterial({
-            color:0x222222
-        })
+new THREE.MeshStandardMaterial({
 
-    );
+color:0x222222
 
-    road.position.set(0,0.02,i);
+})
 
-    scene.add(road);
+);
+
+road.position.set(0,0.05,i);
+
+scene.add(road);
 
 
-    const road2 = new THREE.Mesh(
+const road2 = new THREE.Mesh(
 
-        new THREE.BoxGeometry(30,1,1000),
+new THREE.BoxGeometry(40,1,3000),
 
-        new THREE.MeshStandardMaterial({
-            color:0x222222
-        })
+new THREE.MeshStandardMaterial({
 
-    );
+color:0x222222
 
-    road2.position.set(i,0.02,0);
+})
 
-    scene.add(road2);
+);
+
+road2.position.set(i,0.05,0);
+
+scene.add(road2);
+
 }
 
 
 // BUILDINGS
 
-for(let i=0;i<200;i++){
+for(let i=0;i<500;i++){
 
-    const height = Math.random()*80 + 20;
+const h = Math.random()*150 + 20;
 
-    const building = new THREE.Mesh(
+const building = new THREE.Mesh(
 
-        new THREE.BoxGeometry(
+new THREE.BoxGeometry(
 
-            Math.random()*20+10,
-            height,
-            Math.random()*20+10
+Math.random()*40+10,
 
-        ),
+h,
 
-        new THREE.MeshStandardMaterial({
+Math.random()*40+10
 
-            color:new THREE.Color(
+),
 
-                Math.random()*0.5 + 0.3,
-                Math.random()*0.5 + 0.3,
-                Math.random()*0.5 + 0.3
+new THREE.MeshStandardMaterial({
 
-            )
+color:new THREE.Color(
 
-        })
+Math.random()*0.7,
 
-    );
+Math.random()*0.7,
 
-    building.position.set(
+Math.random()*0.7
 
-        (Math.random()-0.5)*900,
-        height/2,
-        (Math.random()-0.5)*900
+)
 
-    );
+})
 
-    building.castShadow = true;
+);
 
-    scene.add(building);
+building.position.set(
+
+(Math.random()-0.5)*2500,
+
+h/2,
+
+(Math.random()-0.5)*2500
+
+);
+
+building.castShadow = true;
+
+scene.add(building);
+
 }
 
 
 // TREES
 
-for(let i=0;i<80;i++){
+for(let i=0;i<150;i++){
 
-    const trunk = new THREE.Mesh(
+const trunk = new THREE.Mesh(
 
-        new THREE.CylinderGeometry(1,1,10),
+new THREE.CylinderGeometry(1,1,10),
 
-        new THREE.MeshStandardMaterial({
-            color:0x6b4423
-        })
+new THREE.MeshStandardMaterial({
 
-    );
+color:0x6b4423
 
-    trunk.position.set(
+})
 
-        (Math.random()-0.5)*900,
-        5,
-        (Math.random()-0.5)*900
+);
 
-    );
+trunk.position.set(
 
-    scene.add(trunk);
+(Math.random()-0.5)*2500,
+
+5,
+
+(Math.random()-0.5)*2500
+
+);
+
+scene.add(trunk);
 
 
-    const leaves = new THREE.Mesh(
+const leaf = new THREE.Mesh(
 
-        new THREE.SphereGeometry(5),
+new THREE.SphereGeometry(5),
 
-        new THREE.MeshStandardMaterial({
-            color:0x1fa32a
-        })
+new THREE.MeshStandardMaterial({
 
-    );
+color:0x1fa32a
 
-    leaves.position.set(
-        trunk.position.x,
-        13,
-        trunk.position.z
-    );
+})
 
-    scene.add(leaves);
+);
+
+leaf.position.set(
+
+trunk.position.x,
+
+13,
+
+trunk.position.z
+
+);
+
+scene.add(leaf);
+
 }
 
 
-// NPC PEOPLE
+// NPCS
 
 const npcs = [];
 
-for(let i=0;i<30;i++){
+const dialogues = [
 
-    const npc = new THREE.Group();
+"এই ভাই কেমন আছেন?",
 
-    // body
+"ঢাকা শহরে ট্রাফিক অনেক!",
 
-    const body = new THREE.Mesh(
+"চা খাবেন নাকি ভাই?",
 
-        new THREE.BoxGeometry(2,5,1.5),
+"আজকে অনেক গরম!",
 
-        new THREE.MeshStandardMaterial({
-            color:Math.random()*0xffffff
-        })
+"এই রাস্তা দিয়ে যাবেন না!",
 
-    );
+"ভাই সাবধানে গাড়ি চালান!"
 
-    body.position.y = 3;
+];
 
-    npc.add(body);
+for(let i=0;i<80;i++){
+
+const npc = new THREE.Group();
 
 
-    // head
+// BODY
 
-    const head = new THREE.Mesh(
+const body = new THREE.Mesh(
 
-        new THREE.SphereGeometry(1),
+new THREE.BoxGeometry(2,5,1.5),
 
-        new THREE.MeshStandardMaterial({
-            color:0xffd2a1
-        })
+new THREE.MeshStandardMaterial({
 
-    );
+color:Math.random()*0xffffff
 
-    head.position.y = 7;
+})
 
-    npc.add(head);
+);
 
-    npc.position.set(
+body.position.y = 3;
 
-        (Math.random()-0.5)*300,
-        0,
-        (Math.random()-0.5)*300
+npc.add(body);
 
-    );
 
-    npc.userData = {
+// HEAD
 
-        speed:Math.random()*0.1 + 0.03,
-        direction:Math.random()*Math.PI*2
+const head = new THREE.Mesh(
 
-    };
+new THREE.SphereGeometry(1),
 
-    scene.add(npc);
+new THREE.MeshStandardMaterial({
 
-    npcs.push(npc);
+color:0xffcc99
+
+})
+
+);
+
+head.position.y = 7;
+
+npc.add(head);
+
+
+npc.position.set(
+
+(Math.random()-0.5)*800,
+
+0,
+
+(Math.random()-0.5)*800
+
+);
+
+npc.userData = {
+
+speed:Math.random()*0.12 + 0.03,
+
+direction:Math.random()*Math.PI*2,
+
+dialogue:dialogues[
+
+Math.floor(Math.random()*dialogues.length)
+
+]
+
+};
+
+scene.add(npc);
+
+npcs.push(npc);
+
 }
 
 
@@ -348,122 +514,219 @@ for(let i=0;i<30;i++){
 
 const cars = [];
 
-for(let i=0;i<15;i++){
+for(let i=0;i<35;i++){
 
-    const car = new THREE.Mesh(
+const car = new THREE.Mesh(
 
-        new THREE.BoxGeometry(6,2,10),
+new THREE.BoxGeometry(5,2,10),
 
-        new THREE.MeshStandardMaterial({
+new THREE.MeshStandardMaterial({
 
-            color:Math.random()*0xffffff
+color:Math.random()*0xffffff
 
-        })
+})
 
-    );
+);
 
-    car.position.set(
+car.position.set(
 
-        (Math.random()-0.5)*300,
-        1,
-        (Math.random()-0.5)*300
+(Math.random()-0.5)*800,
 
-    );
+1,
 
-    car.userData = {
+(Math.random()-0.5)*800
 
-        speed:Math.random()*0.3 + 0.1
-    };
+);
 
-    scene.add(car);
+car.userData = {
 
-    cars.push(car);
+speed:Math.random()*0.8 + 0.2
+
+};
+
+scene.add(car);
+
+cars.push(car);
+
 }
 
 
-// PLAYER CONTROLS
+// CONTROLS
 
 const controls = new PointerLockControls(
+
 camera,
+
 document.body
 );
-
-document.getElementById("startBtn")
-.addEventListener("click",()=>{
-
-    controls.lock();
-
-    document.getElementById("loading")
-    .style.display = "none";
-});
 
 scene.add(controls.getObject());
 
 camera.position.y = 10;
 
+document.getElementById("playBtn")
+
+.addEventListener("click",()=>{
+
+controls.lock();
+
+document.getElementById("loading")
+
+.style.display = "none";
+
+});
+
+
+// PLAYER
+
+let health = 100;
+
+let wanted = 0;
+
+let money = 500;
+
+
+// KEYS
+
 const keys = {};
 
 document.addEventListener("keydown",(e)=>{
 
-    keys[e.key.toLowerCase()] = true;
+keys[e.key.toLowerCase()] = true;
+
 });
 
 document.addEventListener("keyup",(e)=>{
 
-    keys[e.key.toLowerCase()] = false;
+keys[e.key.toLowerCase()] = false;
+
 });
 
 
-// ANIMATION LOOP
+// SHOOT
+
+document.addEventListener("click",()=>{
+
+wanted++;
+
+document.getElementById("wanted")
+
+innerText = wanted;
+
+});
+
+
+// NPC TALK
+
+setInterval(()=>{
+
+const npc = npcs[
+
+Math.floor(Math.random()*npcs.length)
+
+];
+
+document.getElementById("voice")
+
+innerHTML =
+
+"🗣️ লোকজন: \"" +
+
+npc.userData.dialogue +
+
+"\"";
+
+},4000);
+
+
+// GAME LOOP
 
 function animate(){
 
-    requestAnimationFrame(animate);
-
-    // PLAYER MOVE
-
-    if(keys["w"]) controls.moveForward(0.7);
-
-    if(keys["s"]) controls.moveForward(-0.7);
-
-    if(keys["a"]) controls.moveRight(-0.7);
-
-    if(keys["d"]) controls.moveRight(0.7);
+requestAnimationFrame(animate);
 
 
-    // NPC MOVEMENT
+// PLAYER MOVE
 
-    npcs.forEach((npc)=>{
+if(keys["w"]) controls.moveForward(1);
 
-        npc.position.x +=
-        Math.cos(npc.userData.direction)
-        * npc.userData.speed;
+if(keys["s"]) controls.moveForward(-1);
 
-        npc.position.z +=
-        Math.sin(npc.userData.direction)
-        * npc.userData.speed;
+if(keys["a"]) controls.moveRight(-1);
 
-        if(Math.random() < 0.01){
-
-            npc.userData.direction =
-            Math.random()*Math.PI*2;
-        }
-    });
+if(keys["d"]) controls.moveRight(1);
 
 
-    // CAR MOVEMENT
+// NPC MOVE
 
-    cars.forEach((car)=>{
+npcs.forEach((npc)=>{
 
-        car.position.x += car.userData.speed;
+npc.position.x +=
 
-        if(car.position.x > 500){
+Math.cos(npc.userData.direction)
 
-            car.position.x = -500;
-        }
-    });
+* npc.userData.speed;
 
-    renderer.render(scene,camera);
+npc.position.z +=
+
+Math.sin(npc.userData.direction)
+
+* npc.userData.speed;
+
+if(Math.random()<0.01){
+
+npc.userData.direction =
+
+Math.random()*Math.PI*2;
+
+}
+
+});
+
+
+// CAR MOVE
+
+cars.forEach((car)=>{
+
+car.position.x += car.userData.speed;
+
+if(car.position.x > 1500){
+
+car.position.x = -1500;
+
+}
+
+});
+
+
+// RANDOM DAMAGE
+
+if(Math.random()<0.003){
+
+health--;
+
+document.getElementById("health")
+
+.innerText = health;
+
+}
+
+
+// RANDOM MONEY
+
+if(Math.random()<0.002){
+
+money += 50;
+
+document.getElementById("money")
+
+.innerText = money;
+
+}
+
+
+renderer.render(scene,camera);
+
 }
 
 animate();
@@ -473,15 +736,19 @@ animate();
 
 window.addEventListener("resize",()=>{
 
-    camera.aspect =
-    window.innerWidth/window.innerHeight;
+camera.aspect =
 
-    camera.updateProjectionMatrix();
+window.innerWidth/window.innerHeight;
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+
+window.innerWidth,
+
+window.innerHeight
+);
+
 });
 
 </script>
